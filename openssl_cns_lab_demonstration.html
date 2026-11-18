@@ -579,6 +579,16 @@
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
+    .rsa-enc-dec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 992px) {
+      .rsa-enc-dec-grid {
+        grid-template-columns: 1fr;
+      }
+    }
     .key-card {
       background: #070b14;
       border-radius: 10px;
@@ -932,7 +942,7 @@
         <button class="nav-btn" onclick="scrollToSection('sec-flow')">Workflow</button>
         <button class="nav-btn" onclick="scrollToSection('sec-aes')">AES-256</button>
         <button class="nav-btn" onclick="scrollToSection('sec-hash')">SHA-256</button>
-        <button class="nav-btn" onclick="scrollToSection('sec-rsa')">RSA Keygen</button>
+        <button class="nav-btn" onclick="scrollToSection('sec-rsa')">RSA Keygen + Enc/Dec</button>
         <button class="nav-btn" onclick="scrollToSection('sec-sig')">Signature</button>
         <button class="nav-btn" onclick="scrollToSection('sec-cmd')">Terminal</button>
         <button class="nav-btn" onclick="scrollToSection('sec-apps')">Applications</button>
@@ -1273,39 +1283,44 @@
     </section>
 
     <!-- ============================================== -->
-    <!-- SECTION 6: RSA KEY GENERATION                  -->
-    <!-- ============================================== -->
+    <!-- SECTION 6: RSA KEY GENERATION + ENCRYPTION/DECRYPTION -->
+    <!-- ======================================================= -->
     <section id="sec-rsa">
       <div class="section-header">
         <span class="section-tag">ASYMMETRIC CRYPTOGRAPHY</span>
-        <h2 class="section-title">RSA-2048 Asymmetric Key Generation</h2>
+        <h2 class="section-title">RSA-2048 Key Generation, Encryption &amp; Decryption</h2>
         <p class="section-desc">
-          Mathematical generation of prime factors <span style="color: var(--cyan); font-family: var(--font-mono);">p</span> & <span style="color: var(--cyan); font-family: var(--font-mono);">q</span> to construct modulus <span style="color: var(--green); font-family: var(--font-mono);">n = p*q</span>, public exponent <span style="color: var(--cyan); font-family: var(--font-mono);">e = 65537</span>, and secret private exponent <span style="color: var(--red); font-family: var(--font-mono);">d</span>.
+          Generate a real RSA-2048 key pair using the browser's Web Crypto API, then use the <strong style="color:var(--cyan)">Public Key to encrypt</strong> and the <strong style="color:var(--red)">Private Key to decrypt</strong> a message — exactly how OpenSSL works.
         </p>
       </div>
 
-      <div style="text-align: center; margin-bottom: 24px;">
-        <button class="btn-action" style="margin: 0 auto;" onclick="generateRsaKeysDemo()">
-          ⚡ Compute & Generate New RSA Key Pair
-        </button>
-      </div>
-
-      <div class="rsa-grid">
-        <!-- Private Key Card -->
-        <div class="key-card key-card-priv">
-          <div class="key-header">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 1.2rem;">🔒</span>
-              <span style="font-weight: 700; color: #fff;">Private Key (private.pem)</span>
-            </div>
-            <span class="key-tag-priv">SECRET • NEVER SHARE</span>
+      <!-- Step 1: Generate Keys -->
+      <div style="background:var(--bg-card-alt); border:1px solid var(--border-glow); border-radius:12px; padding:20px; margin-bottom:24px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+          <div>
+            <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--cyan); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">STEP 1 — KEY GENERATION</div>
+            <h4 style="color:#fff; font-size:1rem;">Generate RSA-2048 Key Pair (Web Crypto API)</h4>
+            <p style="color:var(--text-muted); font-size:0.82rem; margin-top:4px;">Equivalent to: <code style="color:var(--green); background:#070b14; padding:2px 8px; border-radius:4px; font-family:var(--font-mono);">openssl genrsa -out private.pem 2048</code></p>
           </div>
+          <button class="btn-action" onclick="generateRsaKeysDemo()" id="btn-rsa-gen">
+            ⚡ Generate New RSA-2048 Key Pair
+          </button>
+        </div>
 
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
-            Contains prime factors (p, q), modulus (n), and private exponent (d). Used exclusively for decryption and creating digital signatures. Must be strictly guarded with file permissions (e.g. chmod 600).
-          </p>
-
-          <div class="pem-box" id="rsa-priv-pem">
+        <div class="rsa-grid">
+          <!-- Private Key Card -->
+          <div class="key-card key-card-priv">
+            <div class="key-header">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.2rem;">🔒</span>
+                <span style="font-weight:700; color:#fff;">Private Key (private.pem)</span>
+              </div>
+              <span class="key-tag-priv">SECRET • NEVER SHARE</span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">
+              Contains prime factors (p, q), modulus (n), and private exponent (d). Used for <strong style="color:var(--red)">Decryption</strong> and signing. Guard with <code>chmod 600</code>.
+            </p>
+            <div class="pem-box" id="rsa-priv-pem">
 -----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAz9v0L8mZ1N5H8k0r...[2048-bit Modulus n]
 e=65537 (0x10001)...
@@ -1313,30 +1328,122 @@ d=[Secret Private Exponent]...
 p=[Prime Factor 1 (1024-bit)]...
 q=[Prime Factor 2 (1024-bit)]...
 -----END RSA PRIVATE KEY-----
-          </div>
-        </div>
-
-        <!-- Public Key Card -->
-        <div class="key-card key-card-pub">
-          <div class="key-header">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 1.2rem;">🌐</span>
-              <span style="font-weight: 700; color: #fff;">Public Key (public.pem)</span>
             </div>
-            <span class="key-tag-pub">SHAREABLE • DISTRIBUTABLE</span>
           </div>
 
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
-            Derived mathematically from the private key. Contains only the modulus (n) and public exponent (e=65537). Safely distributed to anyone to encrypt messages or verify signatures.
-          </p>
-
-          <div class="pem-box" id="rsa-pub-pem">
+          <!-- Public Key Card -->
+          <div class="key-card key-card-pub">
+            <div class="key-header">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.2rem;">🌐</span>
+                <span style="font-weight:700; color:#fff;">Public Key (public.pem)</span>
+              </div>
+              <span class="key-tag-pub">SHAREABLE • DISTRIBUTABLE</span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">
+              Contains only modulus (n) and exponent (e=65537). Used for <strong style="color:var(--cyan)">Encryption</strong> and signature verification. Safe to distribute publicly.
+            </p>
+            <div class="pem-box" id="rsa-pub-pem">
 -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz9v0L8mZ1N5H8k0r...
 [2048-bit Modulus n derived mathematically from Private Key]
 IDAQAB (e = 65537)
 -----END PUBLIC KEY-----
+            </div>
           </div>
+        </div>
+
+        <!-- Key-ready status badge -->
+        <div id="rsa-key-status" style="display:none; margin-top:14px; padding:10px 16px; border-radius:8px; background:rgba(0,255,157,0.1); border:1px solid var(--green); color:var(--green); font-family:var(--font-mono); font-size:0.85rem; display:none; align-items:center; gap:8px;">
+          ✅ &nbsp;Real RSA-2048 key pair generated via Web Crypto API — Ready for Encryption & Decryption
+        </div>
+      </div>
+
+      <!-- Step 2: RSA Encryption -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;" class="rsa-enc-dec-grid">
+
+        <!-- Encryption Panel -->
+        <div class="cyber-card" style="border-color:rgba(0,240,255,0.5);">
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--cyan); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">STEP 2 — RSA ENCRYPTION (PUBLIC KEY)</div>
+          <h3 style="color:var(--cyan); font-size:1.05rem; margin-bottom:4px; display:flex; align-items:center; gap:8px;">🔐 Encrypt with Public Key</h3>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">
+            Only the holder of the matching <strong style="color:var(--red)">Private Key</strong> can decrypt this. Algorithm: RSA-OAEP with SHA-256.<br>
+            <code style="color:var(--green); font-family:var(--font-mono); font-size:0.75rem;">openssl rsautl -encrypt -inkey public.pem -pubin -in msg.txt -out enc.bin</code>
+          </p>
+
+          <div class="form-group">
+            <label class="form-label">Plaintext Message to Encrypt:</label>
+            <input type="text" id="rsa-plain-input" class="input-box" value="Secure RSA Message from CNS Lab 2026" placeholder="Enter message to encrypt with RSA public key...">
+          </div>
+
+          <button class="btn-action" onclick="rsaEncrypt()" style="width:100%; justify-content:center; margin-bottom:14px;" id="btn-rsa-enc">
+            🔒 Encrypt with Public Key
+          </button>
+
+          <div class="form-label">RSA Ciphertext (Base64 encoded binary):</div>
+          <div id="rsa-cipher-output" class="cipher-display-box" style="color:var(--cyan); min-height:100px; font-size:0.75rem; word-break:break-all;">
+            [Generate keys first, then click Encrypt]
+          </div>
+
+          <div id="rsa-enc-info" style="display:none; margin-top:10px; padding:8px 12px; border-radius:6px; background:rgba(0,240,255,0.08); border:1px solid rgba(0,240,255,0.3); font-size:0.78rem; color:var(--text-muted); font-family:var(--font-mono);">
+            🔐 Ciphertext is <span style="color:var(--cyan)">256 bytes (2048 bits)</span> — same length as RSA modulus n regardless of message size
+          </div>
+        </div>
+
+        <!-- Decryption Panel -->
+        <div class="cyber-card" style="border-color:rgba(255,51,102,0.5);">
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--red); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">STEP 3 — RSA DECRYPTION (PRIVATE KEY)</div>
+          <h3 style="color:var(--green); font-size:1.05rem; margin-bottom:4px; display:flex; align-items:center; gap:8px;">🔓 Decrypt with Private Key</h3>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">
+            The <strong style="color:var(--red)">Private Key</strong> (held only by the receiver) decrypts the RSA ciphertext using modular exponentiation.<br>
+            <code style="color:var(--green); font-family:var(--font-mono); font-size:0.75rem;">openssl rsautl -decrypt -inkey private.pem -in enc.bin -out decrypted.txt</code>
+          </p>
+
+          <div class="form-label" style="margin-bottom:8px;">Received Ciphertext (auto-filled from encryption):</div>
+          <div id="rsa-cipher-preview" class="cipher-display-box" style="color:var(--text-muted); font-size:0.75rem; min-height:60px; margin-bottom:14px; word-break:break-all;">
+            [Awaiting ciphertext from Encryption panel]
+          </div>
+
+          <button class="btn-action" onclick="rsaDecrypt()" style="width:100%; justify-content:center; background:var(--green); color:#070b14; margin-bottom:14px;" id="btn-rsa-dec">
+            🔓 Decrypt with Private Key
+          </button>
+
+          <div class="form-label">Recovered Plaintext:</div>
+          <div id="rsa-plain-output" class="cipher-display-box" style="color:#fff; min-height:60px;">
+            [Click Decrypt to recover original message]
+          </div>
+
+          <div id="rsa-dec-status" style="display:none; margin-top:10px; padding:10px 14px; border-radius:8px; font-family:var(--font-mono); font-size:0.85rem; font-weight:700; align-items:center; gap:8px;"></div>
+        </div>
+      </div>
+
+      <!-- RSA Flow Explanation -->
+      <div style="background:var(--bg-card); border:1px solid var(--border-glow); border-radius:12px; padding:20px;">
+        <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--cyan); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">HOW RSA ENCRYPTION WORKS — MATHEMATICAL FLOW</div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; text-align:center; font-size:0.82rem;">
+          <div style="background:#070b14; padding:14px; border-radius:8px; border:1px solid var(--border-glow);">
+            <div style="font-size:1.5rem; margin-bottom:6px;">📄</div>
+            <div style="color:var(--cyan); font-weight:700; margin-bottom:4px;">Plaintext (M)</div>
+            <div style="color:var(--text-muted); font-size:0.75rem;">Original message converted to integer M</div>
+          </div>
+          <div style="background:#070b14; padding:14px; border-radius:8px; border:1px solid rgba(0,240,255,0.4);">
+            <div style="font-size:1.5rem; margin-bottom:6px;">🌐</div>
+            <div style="color:var(--cyan); font-weight:700; margin-bottom:4px;">Encrypt (Public Key)</div>
+            <div style="color:var(--text-muted); font-size:0.75rem; font-family:var(--font-mono);">C = M<sup>e</sup> mod n</div>
+          </div>
+          <div style="background:#070b14; padding:14px; border-radius:8px; border:1px solid rgba(255,51,102,0.4);">
+            <div style="font-size:1.5rem; margin-bottom:6px;">🔒</div>
+            <div style="color:var(--red); font-weight:700; margin-bottom:4px;">Decrypt (Private Key)</div>
+            <div style="color:var(--text-muted); font-size:0.75rem; font-family:var(--font-mono);">M = C<sup>d</sup> mod n</div>
+          </div>
+          <div style="background:#070b14; padding:14px; border-radius:8px; border:1px solid rgba(0,255,157,0.4);">
+            <div style="font-size:1.5rem; margin-bottom:6px;">✅</div>
+            <div style="color:var(--green); font-weight:700; margin-bottom:4px;">Recovered (M)</div>
+            <div style="color:var(--text-muted); font-size:0.75rem;">Original message mathematically restored</div>
+          </div>
+        </div>
+        <div style="margin-top:12px; padding:10px; background:rgba(245,158,11,0.08); border:1px solid var(--amber); border-radius:6px; font-size:0.82rem; color:#fed7aa;">
+          <strong>⚠️ Important:</strong> RSA is too slow for large data. In practice, OpenSSL uses <strong>RSA to encrypt an AES session key</strong>, then uses AES to encrypt the actual data. This is called <strong>Hybrid Encryption</strong> (used in TLS, PGP, HTTPS).
         </div>
       </div>
     </section>
@@ -1800,33 +1907,168 @@ IDAQAB (e = 65537)
       runAesEncrypt();
     }
 
-    // --- RSA Keygen Simulation ---
-    function generateRsaKeysDemo() {
+    // --- RSA-2048 Web Crypto API: Real Key Generation, Encryption & Decryption ---
+    let rsaCryptoKey = null;  // { publicKey, privateKey } CryptoKeyPair
+
+    async function generateRsaKeysDemo() {
       const privBox = document.getElementById('rsa-priv-pem');
-      const pubBox = document.getElementById('rsa-pub-pem');
+      const pubBox  = document.getElementById('rsa-pub-pem');
+      const statusEl = document.getElementById('rsa-key-status');
+      const btn = document.getElementById('btn-rsa-gen');
 
-      privBox.innerText = "Generating 2048-bit primes p and q...";
-      pubBox.innerText = "Deriving public modulus n...";
+      btn.innerText = "⏳ Computing Primes p & q...";
+      privBox.innerText = "Generating 2048-bit primes p and q using CSPRNG...";
+      pubBox.innerText  = "Deriving public modulus n = p × q...";
 
-      setTimeout(() => {
-        const randHex = Array.from(crypto.getRandomValues(new Uint8Array(20)))
-          .map(b => b.toString(16).padStart(2, '0')).join('');
-        
-        privBox.innerHTML = `-----BEGIN RSA PRIVATE KEY-----<br>` +
-          `MIIEowIBAAKCAQEAz${randHex}9B...<br>` +
-          `Modulus n (2048 bits) = p * q<br>` +
-          `e = 65537 (0x10001)<br>` +
-          `d = [Secret Private Exponent (2048 bits)]<br>` +
-          `prime1 p = [1024-bit Factor]<br>` +
-          `prime2 q = [1024-bit Factor]<br>` +
-          `-----END RSA PRIVATE KEY-----`;
+      try {
+        // Real RSA-OAEP key generation via Web Crypto API
+        rsaCryptoKey = await crypto.subtle.generateKey(
+          {
+            name: "RSA-OAEP",
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),  // 65537
+            hash: "SHA-256"
+          },
+          true,
+          ["encrypt", "decrypt"]
+        );
 
-        pubBox.innerHTML = `-----BEGIN PUBLIC KEY-----<br>` +
-          `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz${randHex}9B...<br>` +
-          `[Contains Modulus n and Exponent e=65537]<br>` +
-          `IDAQAB<br>` +
-          `-----END PUBLIC KEY-----`;
-      }, 500);
+        // Export to SPKI (public) and PKCS8 (private) for PEM display
+        const pubDer  = await crypto.subtle.exportKey("spki",  rsaCryptoKey.publicKey);
+        const privDer = await crypto.subtle.exportKey("pkcs8", rsaCryptoKey.privateKey);
+
+        const pubB64  = btoa(String.fromCharCode(...new Uint8Array(pubDer)));
+        const privB64 = btoa(String.fromCharCode(...new Uint8Array(privDer)));
+
+        const formatPem = (b64, label) => {
+          const lines = b64.match(/.{1,64}/g).join('\n');
+          return `-----BEGIN ${label}-----\n${lines}\n-----END ${label}-----`;
+        };
+
+        privBox.innerText = formatPem(privB64, 'PRIVATE KEY');
+        pubBox.innerText  = formatPem(pubB64,  'PUBLIC KEY');
+
+        // Show success status
+        if (statusEl) {
+          statusEl.style.display = "flex";
+        }
+        btn.innerText = "⚡ Generate New RSA-2048 Key Pair";
+
+        // Reset enc/dec panels
+        document.getElementById('rsa-cipher-output').innerText = "[Keys ready — enter a message and click Encrypt]";
+        document.getElementById('rsa-cipher-preview').innerText = "[Awaiting ciphertext from Encryption panel]";
+        document.getElementById('rsa-plain-output').innerText  = "[Click Decrypt to recover original message]";
+        document.getElementById('rsa-dec-status').style.display = "none";
+        document.getElementById('rsa-enc-info').style.display   = "none";
+
+      } catch (err) {
+        privBox.innerText = "Error generating keys: " + err.message;
+        btn.innerText = "⚡ Generate New RSA-2048 Key Pair";
+      }
+    }
+
+    // --- RSA Encryption using Public Key (RSA-OAEP / SHA-256) ---
+    async function rsaEncrypt() {
+      if (!rsaCryptoKey) {
+        alert("⚠️ Please generate an RSA key pair first by clicking 'Generate New RSA-2048 Key Pair'.");
+        return;
+      }
+      const plaintext  = document.getElementById('rsa-plain-input').value;
+      const outputBox  = document.getElementById('rsa-cipher-output');
+      const previewBox = document.getElementById('rsa-cipher-preview');
+      const infoEl     = document.getElementById('rsa-enc-info');
+
+      if (!plaintext.trim()) {
+        alert("Please enter a message to encrypt.");
+        return;
+      }
+
+      outputBox.innerText = "Encrypting with RSA-OAEP...";
+      outputBox.style.color = "var(--text-muted)";
+
+      try {
+        const encoded = new TextEncoder().encode(plaintext);
+        const cipherBuffer = await crypto.subtle.encrypt(
+          { name: "RSA-OAEP" },
+          rsaCryptoKey.publicKey,
+          encoded
+        );
+
+        // Convert to Base64 for display (same as how openssl produces binary)
+        const cipherB64 = btoa(String.fromCharCode(...new Uint8Array(cipherBuffer)));
+
+        outputBox.innerText = cipherB64;
+        outputBox.style.color = "var(--cyan)";
+
+        // Mirror to decryption panel
+        previewBox.innerText = cipherB64;
+        previewBox.style.color = "var(--text-muted)";
+
+        infoEl.style.display = "block";
+
+        // Clear any old decryption output
+        document.getElementById('rsa-plain-output').innerText = "[Click Decrypt to recover original message]";
+        document.getElementById('rsa-plain-output').style.color = "#fff";
+        document.getElementById('rsa-dec-status').style.display = "none";
+
+      } catch (err) {
+        outputBox.innerText = "Encryption Error: " + err.message;
+        outputBox.style.color = "var(--red)";
+      }
+    }
+
+    // --- RSA Decryption using Private Key (RSA-OAEP / SHA-256) ---
+    async function rsaDecrypt() {
+      if (!rsaCryptoKey) {
+        alert("⚠️ Please generate an RSA key pair first.");
+        return;
+      }
+      const cipherB64  = document.getElementById('rsa-cipher-preview').innerText.trim();
+      const outputBox  = document.getElementById('rsa-plain-output');
+      const statusEl   = document.getElementById('rsa-dec-status');
+
+      if (!cipherB64 || cipherB64.startsWith('[')) {
+        alert("⚠️ Please encrypt a message first using the left panel.");
+        return;
+      }
+
+      outputBox.innerText = "Decrypting with RSA private key...";
+      outputBox.style.color = "var(--text-muted)";
+
+      try {
+        // Convert Base64 ciphertext back to ArrayBuffer
+        const binaryStr  = atob(cipherB64);
+        const cipherBytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          cipherBytes[i] = binaryStr.charCodeAt(i);
+        }
+
+        const plainBuffer = await crypto.subtle.decrypt(
+          { name: "RSA-OAEP" },
+          rsaCryptoKey.privateKey,
+          cipherBytes
+        );
+
+        const recovered = new TextDecoder().decode(plainBuffer);
+        outputBox.innerText = recovered;
+        outputBox.style.color = "var(--green)";
+
+        statusEl.style.display  = "flex";
+        statusEl.style.background = "rgba(0,255,157,0.12)";
+        statusEl.style.border    = "1px solid var(--green)";
+        statusEl.style.color     = "var(--green)";
+        statusEl.innerHTML = "✅ &nbsp;RSA Decryption Successful — Private Key correctly reversed the Public Key encryption";
+
+      } catch (err) {
+        outputBox.innerText = "Decryption Error: " + err.message;
+        outputBox.style.color = "var(--red)";
+
+        statusEl.style.display  = "flex";
+        statusEl.style.background = "rgba(255,51,102,0.12)";
+        statusEl.style.border    = "1px solid var(--red)";
+        statusEl.style.color     = "var(--red)";
+        statusEl.innerHTML = "❌ &nbsp;Decryption failed — ciphertext may have been altered or keys do not match";
+      }
     }
 
     // --- Digital Signature Verification Simulation ---
@@ -1969,7 +2211,7 @@ OpenSSL Lab Command Directory:
       { id: "sec-flow", name: "Complete OpenSSL Working Flow" },
       { id: "sec-aes", name: "AES-256 Encryption & Decryption" },
       { id: "sec-hash", name: "SHA-256 Hashing & Avalanche Effect" },
-      { id: "sec-rsa", name: "RSA-2048 Asymmetric Key Generation" },
+      { id: "sec-rsa", name: "RSA-2048 Key Generation, Encryption & Decryption" },
       { id: "sec-sig", name: "Digital Signature & Verification" },
       { id: "sec-cmd", name: "OpenSSL Terminal Simulation" },
       { id: "sec-apps", name: "Real-World Applications" },
@@ -1988,7 +2230,7 @@ OpenSSL Lab Command Directory:
       // Trigger section-specific visual demos
       if (item.id === "sec-flow") cycleFlowAnimation();
       if (item.id === "sec-aes") runAesEncrypt();
-      if (item.id === "sec-rsa") generateRsaKeysDemo();
+      if (item.id === "sec-rsa") generateRsaKeysDemo().then(() => setTimeout(rsaEncrypt, 1500));
       if (item.id === "sec-sig") verifyDigitalSignature(true);
     }
 
